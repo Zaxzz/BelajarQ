@@ -17,7 +17,7 @@ export default function Materi() {
         const response = await fetch(`https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Belajar/${id}?$lookup=*`, {
           method: "GET",
           headers: {
-            "Authorization": "Bearer 4c9c24a6d8ab2a48599acc969e3cff8a",
+        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
           },
         });
 
