@@ -1,37 +1,43 @@
-import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
+import { useRouter } from "next/router"; // Import useRouter
 
 export default function Home() {
-  const { data: session } = useSession();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter(); // Inisialisasi useRouter
 
-  if (!session || session.status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div
-          className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125em] text-surface motion-reduce:animate-[spin_1.5s_linear_infinite] dark:text-white"
-          role="status"
-        />
-      </div>
-    );
-  }
+  const handleLoginSuccess = () => {
+    setIsLoggedIn(true);
+  };
+
+  const handleRegisterClick = () => {
+    router.push("/auth/register"); // Arahkan ke halaman register
+  };
+
+  const handleLoginClick = () => {
+    router.push("/auth/login"); // Arahkan ke halaman login
+  };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <nav className="bg-blue-600 p-4 flex justify-between items-center text-white">
-        <div className="text-lg font-semibold">Dashboard</div>
-        <div className="flex items-center gap-4">
-          <span>{session.user.email}</span>
+    <div>
+      {isLoggedIn ? (
+        <CardWithForm />
+      ) : (
+        <div className="flex justify-center flex-wrap min-h-screen p-20 gap-4">
+          <h1>Welcome to the Home Page</h1>
           <button
-            onClick={() => signOut()}
-            className="bg-red-500 px-4 py-2 rounded-lg text-white hover:bg-red-600"
+            className="bg-blue-500 text-white p-2 rounded"
+            onClick={handleRegisterClick}
           >
-            Logout
+            Register
+          </button>
+          <button
+            className="bg-blue-500 text-white p-2 rounded"
+            onClick={handleLoginClick}
+          >
+            Login
           </button>
         </div>
-      </nav>
-
-      <div className="flex-grow p-8">
-        <h1 className="text-2xl mb-4">Welcome, {session.user.name}!</h1>
-      </div>
+      )}
     </div>
   );
 }
