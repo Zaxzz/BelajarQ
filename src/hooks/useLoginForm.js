@@ -21,7 +21,7 @@ export default function useLoginForm() {
     setIsLoading(true);
     setError("");
 
-    const errorMessage = validateForm(formData);
+    const errorMessage = await validateForm.checkPassword(formData);
     if (errorMessage) {
       setError(errorMessage);
       setIsLoading(false);

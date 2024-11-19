@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useRouter } from 'next/router'
+import { useRouter } from "next/router";
 
 export function CardWithForm() {
   const [data, setData] = React.useState(null);
@@ -19,12 +19,15 @@ export function CardWithForm() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Belajar", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
-          },
-        });
+        const response = await fetch(
+          "https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Belajar",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Error fetching data");
@@ -60,16 +63,22 @@ export function CardWithForm() {
           <Card key={index} className="w-full">
             <CardHeader>
               <CardTitle>{item.Kategori || `Kelas ${index + 1}`}</CardTitle>
-              <CardDescription>{item.description || "No description available"}</CardDescription>
+              <CardDescription>
+                {item.description || "No description available"}
+              </CardDescription>
               {item.image && (
-                <img src={item["image"][0]["url"]} alt={item.Kategori || "Image"} className="w-full h-48 object-cover rounded-md" />
+                <img
+                  src={item["image"][0]["url"]}
+                  alt={item.Kategori || "Image"}
+                  className="w-full h-48 object-cover rounded-md"
+                />
               )}
             </CardHeader>
             <CardFooter className="flex justify-between">
               <Button variant="outline">Cancel</Button>
-              <Button onClick={() => router.push(`/app/materi/${item["_id"]}`)}>Belajar</Button>
-
-
+              <Button onClick={() => router.push(`/app/materi/${item["_id"]}`)}>
+                Belajar
+              </Button>
             </CardFooter>
           </Card>
         ))}

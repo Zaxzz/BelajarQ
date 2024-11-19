@@ -11,6 +11,7 @@ export default function AuthForm({
   buttonLabel,
   children,
   isLogin = true,
+  handleSocialLogin,
 }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -32,8 +33,8 @@ export default function AuthForm({
           {isLogin && (
             <div className="flex gap-4 mb-6">
               <button
-                onClick={() => signIn("google")}
-                className="flex items-center justify-center w-1/2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={handleSocialLogin}
+                className="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Image
                   src={GoogleLogo}
@@ -44,8 +45,8 @@ export default function AuthForm({
                 />
                 Google
               </button>
-              <button
-                onClick={() => signIn("facebook")}
+              {/* <button
+                onClick={() => handleSocialLogin("facebook")}
                 className="flex items-center justify-center w-1/2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 <Image
@@ -56,7 +57,7 @@ export default function AuthForm({
                   className="mr-2"
                 />
                 Facebook
-              </button>
+              </button> */}
             </div>
           )}
 
@@ -66,9 +67,9 @@ export default function AuthForm({
                 <span className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center">
-                <button className="bg-white px-2 text-sm text-gray-500">
+                <span className="bg-white px-2 text-sm text-gray-500">
                   or continue with email
-                </button>
+                </span>
               </div>
             </div>
           )}

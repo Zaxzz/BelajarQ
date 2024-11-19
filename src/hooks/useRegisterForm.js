@@ -22,7 +22,7 @@ export const useRegisterForm = () => {
     setIsLoading(true);
     setError("");
 
-    const errorMessage = validateForm(formData);
+    const errorMessage = await validateForm.validateAll(formData);
     if (errorMessage) {
       setError(errorMessage);
       setIsLoading(false);

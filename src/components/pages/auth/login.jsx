@@ -1,10 +1,15 @@
 import AuthForm from "@/components/layout/authLayout";
 import { InputField } from "@/components/ui/inputField";
 import useLoginForm from "@/hooks/useLoginForm";
+import { signIn } from "next-auth/react";
 
 export default function LoginView() {
   const { formData, error, isLoading, handleInputChange, handleSubmit } =
     useLoginForm();
+
+  const handleGoogleLogin = () => {
+    signIn("google", { callbackUrl: "/" });
+  };
 
   return (
     <AuthForm
@@ -12,6 +17,7 @@ export default function LoginView() {
       onSubmit={handleSubmit}
       loading={isLoading}
       buttonLabel="Log in"
+      handleSocialLogin={handleGoogleLogin}
     >
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
