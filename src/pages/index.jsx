@@ -1,14 +1,20 @@
-import { useState } from "react";
-import { useRouter } from "next/router"; // Import useRouter
-import CardWithForm from "./app/cardbelajar";
-import kontenbase from "@/lib/kontenbase/init";
-import { signOut } from "next-auth/react";
+
+import SeoHead from "@/components/SeoHead";
+import Layout from "@/components/layout/Layout";
+import Feature from "@/components/Feature";
+import Pricing from "@/components/Pricing";
+import Hero from "@/components/Hero";
 
 export default function Home() {
   
   return (
-    <div className="">
-      <CardWithForm />
-    </div>
+    <>
+      <SeoHead title='LaslesVPN Landing Page' />
+      <Layout>
+        <Hero />
+        <Feature />
+        <Pricing />
+      </Layout>
+    </>
   );
 }

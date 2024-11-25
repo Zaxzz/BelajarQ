@@ -14,7 +14,7 @@ export function CardWithForm() {
   const [data, setData] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
-  const router = useRouter(); // Inisialisasi router di dalam komponen
+  const router = useRouter();
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -57,8 +57,7 @@ export function CardWithForm() {
 
   return (
     <div className="flex justify-center">
-      {/* <button onClick={() => router.push("/app/materi")}>Kembali</button> */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl h-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl">
         {cards.map((item, index) => (
           <Card key={index} className="w-full">
             <CardHeader>

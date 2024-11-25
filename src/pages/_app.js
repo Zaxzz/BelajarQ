@@ -1,5 +1,6 @@
 import { SessionProvider } from "next-auth/react";
-import "@/styles/globals.css";
+import "../styles/tailwind.css";
+import "../styles/slick.css";
 
 export default function App({
   Component,
