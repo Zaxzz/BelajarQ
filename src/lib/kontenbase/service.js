@@ -34,7 +34,7 @@ export const createData = async (collection, data) => {
 
 export const updateData = async (collection, id, data) => {
   try {
-    const response = await fetchData.put(`${collection}/${id}`, data);
+    const response = await fetchData.patch(`${collection}/${id}`, data);
     return response.data;
   } catch (error) {
     console.error("Error updating data:", error);

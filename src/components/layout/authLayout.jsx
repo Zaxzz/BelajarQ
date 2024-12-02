@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import GoogleLogo from "../../../public/assets/google-logo.png";
-import FacebookLogo from "../../../public/assets/facebook-logo.png";
 import { PencilRuler } from "@phosphor-icons/react";
 
 export default function AuthForm({

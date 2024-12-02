@@ -1,6 +1,7 @@
 import AuthForm from "@/components/layout/authLayout";
-import { InputField } from "@/components/ui/inputField";
+import { Input } from "@/components/ui/input";
 import useLoginForm from "@/hooks/useLoginForm";
+import { Mail, RectangleEllipsis } from "lucide-react";
 import { signIn } from "next-auth/react";
 
 export default function LoginView() {
@@ -21,22 +22,24 @@ export default function LoginView() {
     >
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
-      <InputField
+      <Input
         id="email"
         name="email"
         type="email"
         label="Email"
+        startIcon={<Mail />}
         value={formData.email}
         onChange={handleInputChange}
         placeholder="Enter your email"
         required
       />
 
-      <InputField
+      <Input
         id="password"
         name="password"
         type="password"
         label="Password"
+        startIcon={<RectangleEllipsis />}
         value={formData.password}
         onChange={handleInputChange}
         placeholder="Enter your password"
