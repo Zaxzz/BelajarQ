@@ -9,14 +9,23 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 
 export function CardWithForm() {
   const [data, setData] = React.useState(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const router = useRouter();
+  const { data: session } = useSession(); // Ambil data session
+  const token = session?.user.token; // Ambil token dari session
 
   React.useEffect(() => {
+    if (!token) {
+      setError("Token not found. Please log in.");
+      setIsLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await fetch(
@@ -24,7 +33,7 @@ export function CardWithForm() {
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+              Authorization: `Bearer ${token}`, // Gunakan token Bearer
             },
           }
         );
@@ -43,7 +52,7 @@ export function CardWithForm() {
     };
 
     fetchData();
-  }, []);
+  }, [token]); // Dependensi untuk useEffect
 
   if (isLoading) {
     return <div>Loading...</div>;
