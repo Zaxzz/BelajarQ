@@ -74,7 +74,9 @@ export function CardWithForm() {
               )}
             </CardHeader>
             <CardFooter className="flex justify-between">
-              <Button variant="outline">Cancel</Button>
+              <Button onClick={() => router.push(`/app/quiz`)}>
+                Quiz
+              </Button>
               <Button onClick={() => router.push(`/app/materi/${item["_id"]}`)}>
                 Belajar
               </Button>
