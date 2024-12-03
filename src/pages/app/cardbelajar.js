@@ -21,7 +21,7 @@ export function CardWithForm() {
 
   React.useEffect(() => {
     if (!token) {
-      setError("Token not found. Please log in.");
+      setError("Token not found. Please Login.");
       setIsLoading(false);
       return;
     }

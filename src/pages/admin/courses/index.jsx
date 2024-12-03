@@ -103,7 +103,7 @@ export default function CoursesPage() {
                   animate={{ opacity: 1 }}
                   className="col-span-full text-center py-8 text-gray-500"
                 >
-                  No courses found
+                  No Courses Found
                 </motion.div>
               )}
             </AnimatePresence>

@@ -101,6 +101,7 @@ const Header = () => {
           {/* Logout Button */}
           <div className="col-start-10 col-end-12 font-medium flex justify-end items-center">
             <Button
+            //logout
               onClick={() => signOut()}
               className="text-white bg-blue-500 px-4 py-2 rounded-md transition-all"
             >
