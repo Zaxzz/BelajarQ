@@ -1,6 +1,5 @@
 import QuizPageView from "@/components/pages/admin/quizzes";
 import axios from "axios";
-import { useEffect } from "react";
 import useSWR from "swr";
 
 const CATEGORY_OPTIONS = [

@@ -1,34 +1,19 @@
-import { BookOpen, Edit, Star } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { BookOpen, Edit, Star, StarIcon, Trash } from "lucide-react";
 import { ChalkboardTeacher } from "@phosphor-icons/react";
 
-const SubjectCard = ({ subject, onEdit }) => {
+const SubjectCard = ({ subject, onEdit, onDelete }) => {
   return (
-    <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1">
-      <div className="relative">
-        <div className="aspect-video relative overflow-hidden">
-          <img
-            src={subject.image}
-            alt={subject.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
-
-        <button
-          className="absolute top-4 right-4 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white hover:scale-105 focus:ring-2 focus:ring-blue-500"
-          onClick={() => onEdit(subject)}
-        >
-          <Edit size={16} className="text-gray-700" />
-        </button>
-      </div>
-
+    <div className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1">
       <div className="p-5 space-y-3">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 inline-flex items-center gap-1.5">
               <ChalkboardTeacher size={12} />
               {subject.subject}
+            </span>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 inline-flex items-center gap-1.5">
+              <StarIcon size={12} />
+              {subject.category}
             </span>
           </div>
 
@@ -49,6 +34,20 @@ const SubjectCard = ({ subject, onEdit }) => {
             <span className="text-xs font-medium text-gray-600">
               {subject.lesson}
             </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={onEdit}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
+            >
+              <Edit size={16} />
+            </button>
+            <button
+              onClick={onDelete}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors group"
+            >
+              <Trash size={16} />
+            </button>
           </div>
         </div>
       </div>

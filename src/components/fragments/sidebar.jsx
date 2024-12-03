@@ -4,13 +4,11 @@ import {
   GraduationCap,
   Users,
   LogOut,
-  Settings,
   LayoutDashboard,
   Library,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import AccordionMenu from "../ui/accordion";
 
 export default function Sidebar() {
   const router = useRouter();
@@ -44,28 +42,28 @@ export default function Sidebar() {
   ];
 
   return (
-    <div className="fixed left-0 top-0 w-64 h-full bg-white border-r shadow-md flex flex-col">
+    <div className="fixed left-0 top-0 w-64 h-full bg-[#fff] border-r border-gray-100 shadow-md flex flex-col">
       <div className="flex items-center justify-center mb-10 p-4">
         <LayoutDashboard size={32} className="text-blue-600 mr-2" />
         <h2 className="text-2xl font-bold text-gray-800">Dashboard</h2>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-4 space-y-2 scrollbar">
-        {/* Main Menu Items */}
         {mainMenuItems.map((menu) => (
           <motion.div
             key={menu.label}
             whileHover={{ x: 5 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Link
-              href={menu.href}
-              className={`flex items-center p-3 rounded-lg transition font-semibold ${
-                router.pathname === menu.href && "bg-blue-50 text-blue-600"
-              }`}
-            >
-              <menu.icon className="mr-3" size={24} />
-              {menu.label}
+            <Link href={menu.href}>
+              <div
+                className={`rounded-lg transition font-semibold cursor-pointer flex items-center p-3 ${
+                  router.pathname === menu.href && "bg-blue-50 text-blue-600"
+                }`}
+              >
+                <menu.icon className="mr-3" size={24} />
+                {menu.label}
+              </div>
             </Link>
           </motion.div>
         ))}

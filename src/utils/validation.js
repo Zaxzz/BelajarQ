@@ -1,14 +1,17 @@
 import { getData } from "@/lib/kontenbase/service";
 
 export const validateForm = {
-  checkUserName: async (formData) => {
+  checkUserNameAndEmail: async (formData) => {
     try {
-      const data = await getData(
-        `Users?$select[0]=userName&userName=${formData.userName}`
+      const checkUserName = await getData(
+        `Users?userName=${formData.userName}`
       );
+      const checkEmail = await getData(`Users?email=${formData.email}`);
 
-      if (data.length > 0) {
-        return "Username already exists";
+      if (checkUserName.length > 0) {
+        throw new Error("Username already exists");
+      } else if (checkEmail.length > 0) {
+        throw new Error("Email already exists");
       }
 
       return "";
@@ -24,9 +27,11 @@ export const validateForm = {
     return "";
   },
   validateAll: async (formData) => {
-    const userNameError = await validateForm.checkUserName(formData);
-    if (userNameError) {
-      return userNameError;
+    const userNameEmailError = await validateForm.checkUserNameAndEmail(
+      formData
+    );
+    if (userNameEmailError) {
+      return userNameEmailError;
     }
 
     const passwordError = validateForm.checkPassword(formData);

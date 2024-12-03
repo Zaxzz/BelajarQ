@@ -14,7 +14,7 @@ const Breadcrumbs = () => {
     <nav className="text-sm text-gray-400">
       <ul className="flex items-center space-x-2">
         <li>
-          <Link href="/admin" className="hover:text-blue-400">
+          <Link href="/admin" className="hover:text-blue-600">
             Dashboard
           </Link>
         </li>
@@ -31,7 +31,7 @@ const Breadcrumbs = () => {
               <CaretRight size={14} className="text-gray-500" />
               <Link
                 href={href}
-                className={`hover:text-blue-400 text-gray-400 ${
+                className={`hover:text-blue-600 text-gray-400 ${
                   index === pathArray.length - 1
                     ? "font-semibold text-gray-500"
                     : ""

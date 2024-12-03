@@ -1,75 +1,251 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Search,
-  Plus,
-  UserCircle,
-} from "lucide-react";
+import { Search, Plus, UserCircle, Loader2 } from "lucide-react";
 import Layout from "@/components/layout/adminLayout";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import UserCard from "@/components/partials/userCard";
+import { Toast, useToast } from "@/components/ui/toast";
+import useSWR from "swr";
+import { Alert } from "@/components/ui/alert";
 
-// Sample users data
-const users = [
-  {
-    id: 1,
-    username: "johndoe",
-    email: "john.doe@example.com",
-    role: "admin",
-    status: "online",
-    registeredAt: "2023-05-15",
-  },
-  {
-    id: 2,
-    username: "janedoe",
-    email: "jane.doe@example.com",
-    role: "instructor",
-    status: "offline",
-    registeredAt: "2023-07-22",
-  },
-  {
-    id: 3,
-    username: "alexsmith",
-    email: "alex.smith@example.com",
-    role: "student",
-    status: "online",
-    registeredAt: "2023-09-10",
-  },
+const ROLE_OPTIONS = [
+  { value: "", label: "All Roles" },
+  { value: ["admin"], label: "Admin" },
+  { value: ["student"], label: "Student" },
 ];
 
+const STATUS_OPTIONS = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
+
+const fetcher = (url) => axios.get(url).then((res) => res.data.data);
+
+const getInitialUserForm = () => ({
+  userName: "",
+  email: "",
+  role: ROLE_OPTIONS[2].value,
+  status: STATUS_OPTIONS[0].value,
+});
+
 export default function UsersPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterRole, setFilterRole] = useState("");
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { toast, showToast, hideToast } = useToast();
+  const {
+    data: users,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR("/api/users", fetcher);
 
-  const roleOptions = [
-    { value: "", label: "All Roles" },
-    { value: "admin", label: "Admin" },
-    { value: "instructor", label: "Instructor" },
-    { value: "student", label: "Student" },
-  ];
+  const [state, setState] = useState({
+    isAddModalOpen: false,
+    isEditModalOpen: false,
+    showDeleteConfirmation: false,
+    selectedUser: null,
+    searchTerm: "",
+    filterRole: "",
+  });
 
-  const filteredUsers = users.filter(
-    (user) =>
-      (user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (filterRole === "" || user.role === filterRole)
-  );
+  const [userForm, setUserForm] = useState(getInitialUserForm());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleEditUser = (e) => {
-    e.preventDefault();
-    // Edit user logic
-    setIsEditModalOpen(false);
+  const filteredUsers = useMemo(() => {
+    if (!Array.isArray(users)) return [];
+
+    return users.filter((user) => {
+      const matchesRole =
+        !state.filterRole ||
+        user.role?.toLowerCase() === state.filterRole.toLowerCase();
+
+      const matchesSearchTerm =
+        user.userName?.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(state.searchTerm.toLowerCase());
+
+      return matchesRole && matchesSearchTerm;
+    });
+  }, [state.filterRole, state.searchTerm, users]);
+
+  const resetForm = () => setUserForm(getInitialUserForm());
+
+  const handleFormChange = (field, value) => {
+    if (field === "role") value = Array.isArray(value) ? value : [value];
+    setUserForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleDeleteUser = (userId) => {
-    // Delete user logic
-    console.log(`Delete user with ID: ${userId}`);
+  const updateState = (updates) => {
+    setState((prev) => ({ ...prev, ...updates }));
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const { userName, email, role, status } = userForm;
+
+      if (!userName || !email || !role || !status) {
+        showToast({
+          title: "Warning",
+          message: "Please fill in all required fields.",
+          type: "error",
+        });
+        return;
+      }
+
+      const rolesArray = Array.isArray(role) ? role : [role];
+
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/Users`,
+        {
+          userName,
+          password: "belajarQ2024",
+          firstName: "",
+          email,
+          role: rolesArray,
+          isEmailVerified: true,
+          status,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      resetForm();
+      updateState({ isAddModalOpen: false });
+      mutate();
+
+      showToast({
+        title: "Success",
+        message: "User added successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error adding user:", error);
+      showToast({
+        title: "Error",
+        message: "Failed to add user.",
+        type: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const { userName, email, role, status } = userForm;
+
+      if (!userName || !email || !role || !status) {
+        showToast({
+          title: "Warning",
+          message: "Please fill in all required fields.",
+          type: "error",
+        });
+        return;
+      }
+
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/Users/${state.selectedUser._id}`,
+        { userName, email, role, status },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      updateState({ isEditModalOpen: false, selectedUser: null });
+      resetForm();
+      mutate();
+
+      showToast({
+        title: "Success",
+        message: "User updated successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error editing user:", error);
+      showToast({
+        title: "Error",
+        message: "Failed to update user.",
+        type: "error",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/Users/${state.selectedUser._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+          },
+        }
+      );
+
+      updateState({
+        showDeleteConfirmation: false,
+        selectedUser: null,
+      });
+
+      mutate();
+
+      showToast({
+        title: "Success",
+        message: "User deleted successfully.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+
+      showToast({
+        title: "Error",
+        message: error.response?.data?.message || "Failed to delete user",
+        type: "error",
+      });
+
+      updateState({
+        showDeleteConfirmation: false,
+        selectedUser: null,
+      });
+
+      throw error;
+    }
+  };
+
+  const openEditModal = (user) => {
+    updateState({
+      isEditModalOpen: true,
+      selectedUser: user,
+    });
+
+    setUserForm({
+      userName: user.userName,
+      email: user.email,
+      role: user.role,
+      status: user.status,
+    });
+  };
+
+  const openDeleteModal = (user) => {
+    updateState({
+      showDeleteConfirmation: true,
+      selectedUser: user,
+    });
   };
 
   return (
@@ -86,10 +262,10 @@ export default function UsersPage() {
             animate={{ x: 0, opacity: 1 }}
             className="text-2xl font-bold"
           >
-            Users
+            Users Management
           </motion.h1>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button onClick={() => setIsAddModalOpen(true)}>
+            <Button onClick={() => updateState({ isAddModalOpen: true })}>
               <Plus className="mr-2" /> Add User
             </Button>
           </motion.div>
@@ -100,16 +276,16 @@ export default function UsersPage() {
             <Input
               startIcon={<Search />}
               placeholder="Search users..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={state.searchTerm}
+              onChange={(e) => updateState({ searchTerm: e.target.value })}
             />
           </div>
           <div className="w-64">
             <Select
               label="Filter Role"
-              options={roleOptions}
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
+              options={ROLE_OPTIONS}
+              value={state.filterRole}
+              onChange={(e) => updateState({ filterRole: e.target.value })}
             />
           </div>
         </div>
@@ -119,21 +295,15 @@ export default function UsersPage() {
             <thead className="bg-gray-50 border-b">
               <tr>
                 <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
+                  User
                 </th>
                 <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
+                  ID
                 </th>
                 <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Role
                 </th>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Registered
-                </th>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                   Actions
                 </th>
               </tr>
@@ -142,13 +312,10 @@ export default function UsersPage() {
               <AnimatePresence>
                 {filteredUsers.map((user) => (
                   <UserCard
-                    key={user.id}
+                    key={user._id}
                     user={user}
-                    onEdit={(userData) => {
-                      setSelectedUser(userData);
-                      setIsEditModalOpen(true);
-                    }}
-                    onDelete={handleDeleteUser}
+                    onEdit={() => openEditModal(user)}
+                    onDelete={() => openDeleteModal(user)}
                   />
                 ))}
               </AnimatePresence>
@@ -162,30 +329,45 @@ export default function UsersPage() {
           )}
         </div>
 
-        {/* Add User Modal */}
         <AnimatePresence>
-          {isAddModalOpen && (
+          {state.isAddModalOpen && (
             <Modal
               title="User"
-              isOpen={isAddModalOpen}
-              onClose={() => setIsAddModalOpen(false)}
-              onSubmit={console.log}
+              isOpen={state.isAddModalOpen}
+              onClose={() => {
+                resetForm();
+                updateState({ isAddModalOpen: false });
+              }}
+              onSubmit={handleAddUser}
             >
               <div className="space-y-4">
-                <Input label="Username" placeholder="Enter username" required />
+                <Input
+                  label="Username"
+                  placeholder="Enter username"
+                  value={userForm.userName}
+                  onChange={(e) => handleFormChange("userName", e.target.value)}
+                  required
+                />
                 <Input
                   label="Email"
                   type="email"
                   placeholder="Enter email"
+                  value={userForm.email}
+                  onChange={(e) => handleFormChange("email", e.target.value)}
                   required
                 />
-                <Select label="Role" options={roleOptions.slice(1)} required />
+                <Select
+                  label="Role"
+                  options={ROLE_OPTIONS.slice(1)}
+                  value={userForm.role}
+                  onChange={(e) => handleFormChange("role", e.target.value)}
+                  required
+                />
                 <Select
                   label="Status"
-                  options={[
-                    { value: "online", label: "Online" },
-                    { value: "offline", label: "Offline" },
-                  ]}
+                  options={STATUS_OPTIONS}
+                  value={userForm.status}
+                  onChange={(e) => handleFormChange("status", e.target.value)}
                   required
                 />
               </div>
@@ -193,50 +375,87 @@ export default function UsersPage() {
           )}
         </AnimatePresence>
 
-        {/* Edit User Modal */}
         <AnimatePresence>
-          {isEditModalOpen && (
+          {state.isEditModalOpen && state.selectedUser && (
             <Modal
               title="User"
-              isOpen={isEditModalOpen}
-              onClose={() => setIsEditModalOpen(false)}
+              isEditing
+              isOpen={state.isEditModalOpen}
+              onClose={() => updateState({ isEditModalOpen: false })}
               onSubmit={handleEditUser}
-              isEditing={true}
             >
               <div className="space-y-4">
                 <Input
                   label="Username"
-                  placeholder="Enter username"
-                  defaultValue={selectedUser?.username}
+                  placeholder="Enter Username"
+                  value={userForm.userName}
+                  onChange={(e) => handleFormChange("userName", e.target.value)}
                   required
                 />
                 <Input
                   label="Email"
                   type="email"
                   placeholder="Enter email"
-                  defaultValue={selectedUser?.email}
+                  value={userForm.email}
+                  onChange={(e) => handleFormChange("email", e.target.value)}
                   required
                 />
                 <Select
                   label="Role"
-                  options={roleOptions.slice(1)}
-                  defaultValue={selectedUser?.role}
+                  options={ROLE_OPTIONS.slice(1)}
+                  value={userForm.role}
+                  onChange={(e) => handleFormChange("role", e.target.value)}
                   required
                 />
                 <Select
                   label="Status"
-                  options={[
-                    { value: "online", label: "Online" },
-                    { value: "offline", label: "Offline" },
-                  ]}
-                  defaultValue={selectedUser?.status}
+                  options={STATUS_OPTIONS}
+                  value={userForm.status}
+                  onChange={(e) => handleFormChange("status", e.target.value)}
                   required
                 />
               </div>
             </Modal>
           )}
         </AnimatePresence>
+
+        <AnimatePresence>
+          {state.showDeleteConfirmation && state.selectedUser && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex justify-center"
+            >
+              <div className="w-full max-w-md">
+                <Alert
+                  type="warning"
+                  title="Confirm Delete User"
+                  description={`Are you sure you want to delete the user "${state.selectedUser.userName}"?`}
+                >
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        updateState({
+                          showDeleteConfirmation: false,
+                          selectedUser: null,
+                        })
+                      }
+                    >
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={handleDeleteUser}>
+                      Delete
+                    </Button>
+                  </div>
+                </Alert>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
+      <Toast toast={toast} onClose={hideToast} />
     </Layout>
   );
 }

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/router";
 import { authServices } from "@/services/auth/authService";
 import { validateForm } from "@/utils/validation";
+import axios from "axios";
 
 export const useRegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -30,8 +31,18 @@ export const useRegisterForm = () => {
     }
 
     try {
-      await authServices.registerAccount(formData);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/auth/register`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       router.push("/auth/login");
+      return response.data;
     } catch (err) {
       setError(err?.message ?? "An error occurred");
     } finally {

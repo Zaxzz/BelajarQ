@@ -225,7 +225,6 @@ export default function QuizPageView({
         (state.filterCategory === "" || quiz.category === state.filterCategory)
     );
   }, [quizzes, state.searchTerm, state.filterCategory]);
-  console.log(filteredQuizzes)
 
   const updateState = (updates) => {
     setState((prevState) => ({ ...prevState, ...updates }));

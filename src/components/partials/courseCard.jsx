@@ -30,13 +30,15 @@ export const CourseCard = ({ course }) => {
           href={`/admin/subjects?category=${encodeURIComponent(
             course.category
           )}`}
-          className="group/link inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+          className="group/link text-blue-600 hover:text-blue-700 transition-colors"
         >
-          <span className="text-sm font-medium">View Details</span>
-          <ArrowUpRight
-            size={16}
-            className="transition-transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">View Details</span>
+            <ArrowUpRight
+              size={16}
+              className="transition-transform group-hover/link:translate-x-1 group-hover/link:-translate-y-1"
+            />
+          </div>
         </Link>
       </div>
     </div>
