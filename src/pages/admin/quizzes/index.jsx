@@ -40,7 +40,7 @@ export default function QuizPage() {
     error,
     isLoading,
     mutate,
-  } = useSWR("/api/quizzes", fetcher);
+  } = useSWR("/api/admin/quizzes", fetcher);
 
   return (
     <QuizPageView

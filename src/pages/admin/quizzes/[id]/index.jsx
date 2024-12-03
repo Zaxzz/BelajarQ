@@ -24,7 +24,7 @@ export default function QuizDetailsPage() {
     error,
     isLoading,
     mutate,
-  } = useSWR("/api/quizzes", fetcher);
+  } = useSWR("/api/admin/quizzes", fetcher);
 
   useEffect(() => {
     if (!quizzes) return;

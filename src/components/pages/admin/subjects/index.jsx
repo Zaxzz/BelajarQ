@@ -99,7 +99,7 @@ export default function SubjectsPageView({
         });
         return;
       }
-      await axios.post("/api/subjects", {
+      await axios.post("/api/admin/subjects", {
         title,
         category,
         subject,

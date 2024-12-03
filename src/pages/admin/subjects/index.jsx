@@ -20,7 +20,7 @@ export default function SubjectsPage() {
     error,
     isLoading,
     mutate,
-  } = useSWR("/api/subjects", fetcher);
+  } = useSWR("/api/admin/subjects", fetcher);
   const { category } = router.query;
 
   return (

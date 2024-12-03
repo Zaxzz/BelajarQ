@@ -68,7 +68,7 @@ export default function QuizPageView({
         return;
       }
 
-      await axios.post("/api/quizzes", {
+      await axios.post("/api/admin/quizzes", {
         title,
         category,
         duration,
