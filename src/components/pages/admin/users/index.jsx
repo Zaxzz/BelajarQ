@@ -1,444 +1,224 @@
-import React, { useMemo, useState } from "react";
-import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Plus, UserCircle } from "lucide-react";
-import Layout from "@/components/layout/adminLayout";
-import { Modal } from "@/components/ui/modal";
-import { Select } from "@/components/ui/select";
-import UserCard from "@/components/partials/userCard";
-import { Toast, useToast } from "@/components/ui/toast";
-import { Alert } from "@/components/ui/alert";
+  import React, { useMemo, useState, useEffect } from "react";
+  import axios from "axios";
+  import { motion, AnimatePresence } from "framer-motion";
+  import { Input } from "@/components/ui/input";
+  import { Button } from "@/components/ui/button";
+  import { Search, Plus, UserCircle } from "lucide-react";
+  import Layout from "@/components/layout/adminLayout";
+  import { Toast, useToast } from "@/components/ui/toast";
 
-export default function UsersPageView({
-  users,
-  isLoading,
-  error,
-  statusOptions,
-  roleOptions,
-  mutate,
-}) {
-  const { toast, showToast, hideToast } = useToast();
-  const [state, setState] = useState({
-    isAddModalOpen: false,
-    isEditModalOpen: false,
-    showDeleteConfirmation: false,
-    selectedUser: null,
-    searchTerm: "",
-    filterRole: "",
-  });
+  export default function UsersPageView({ statusOptions, roleOptions }) {
+    const { toast, showToast } = useToast();
 
-  const [userForm, setUserForm] = useState({
-    userName: "",
-    email: "",
-    role: roleOptions[2].value,
-    status: statusOptions[0].value,
-  });
+    const [users, setUsers] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-  const filteredUsers = useMemo(() => {
-    if (!Array.isArray(users)) return [];
-
-    return users.filter((user) => {
-      const matchesRole =
-        !state.filterRole ||
-        user.role?.toLowerCase() === state.filterRole.toLowerCase();
-
-      const matchesSearchTerm =
-        user.userName?.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(state.searchTerm.toLowerCase());
-
-      return matchesRole && matchesSearchTerm;
-    });
-  }, [state.filterRole, state.searchTerm, users]);
-
-  const resetForm = () =>
-    setUserForm({
-      userName: "",
-      email: "",
-      role: roleOptions[2].value,
-      status: statusOptions[0].value,
+    const [state, setState] = useState({
+      searchTerm: "",
+      filterRole: "",
     });
 
-  const handleFormChange = (field, value) => {
-    if (field === "role") value = Array.isArray(value) ? value : [value];
-    setUserForm((prev) => ({ ...prev, [field]: value }));
-  };
+    const [editUser, setEditUser] = useState(null); // State for editing user
 
-  const updateState = (updates) => {
-    setState((prev) => ({ ...prev, ...updates }));
-  };
+    // Fetch users from API
+    useEffect(() => {
+      fetchUsers();
+    }, []);
 
-  const handleAddUser = async (e) => {
-    e.preventDefault();
-
-    try {
-      const { userName, email, role, status } = userForm;
-
-      if (!userName || !email || !role || !status) {
-        showToast({
-          title: "Warning",
-          message: "Please fill in all required fields.",
-          type: "error",
-        });
-        return;
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(
+          "https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Users",
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            },
+          }
+        );
+        setUsers(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch users:", err);
+        setError(err.message || "Something went wrong.");
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      const rolesArray = Array.isArray(role) ? role : [role];
-
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/Users`,
-        {
-          userName,
-          password: "belajarQ2024",
-          firstName: "",
-          email,
-          role: rolesArray,
-          isEmailVerified: true,
-          status,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      resetForm();
-      updateState({ isAddModalOpen: false });
-      mutate();
-
-      showToast({
-        title: "Success",
-        message: "User added successfully.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error adding user:", error);
-      showToast({
-        title: "Error",
-        message: "Failed to add user.",
-        type: "error",
-      });
-    }
-  };
-
-  const handleEditUser = async (e) => {
-    e.preventDefault();
-
-    try {
-      const { userName, email, role, status } = userForm;
-
-      if (!userName || !email || !role || !status) {
-        showToast({
-          title: "Warning",
-          message: "Please fill in all required fields.",
-          type: "error",
-        });
-        return;
+    // Handle delete user
+    const handleDelete = async (userId) => {
+      try {
+        await axios.delete(
+          `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Users/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            },
+          }
+        );
+        showToast({ title: "User deleted successfully", variant: "success" });
+        fetchUsers(); // Refresh the user list
+      } catch (err) {
+        console.error("Failed to delete user:", err);
+        showToast({ title: "Failed to delete user", variant: "destructive" });
       }
+    };
 
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/Users/${state.selectedUser._id}`,
-        { userName, email, role, status },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
-            "Content-Type": "application/json",
+    // Handle edit user
+    const handleEdit = async (user) => {
+      try {
+        const updatedUser = await axios.patch(
+          `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Users/${user._id}`,
+          {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
           },
-        }
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            },
+          }
+        );
+        showToast({ title: "User updated successfully", variant: "success" });
+        setEditUser(null); // Exit edit mode
+        fetchUsers(); // Refresh the user list
+      } catch (err) {
+        console.error("Failed to update user:", err);
+        showToast({ title: "Failed to update user", variant: "destructive" });
+      }
+    };
 
-      updateState({ isEditModalOpen: false, selectedUser: null });
-      resetForm();
-      mutate();
+    // Filter users based on search and role
+    const filteredUsers = useMemo(() => {
+      if (!Array.isArray(users)) return [];
 
-      showToast({
-        title: "Success",
-        message: "User updated successfully.",
-        type: "success",
+      return users.filter((user) => {
+        const matchesRole =
+          !state.filterRole ||
+          user.role?.some((role) =>
+            role.toLowerCase().includes(state.filterRole.toLowerCase())
+          );
+
+        const matchesSearchTerm =
+          user.userName?.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+          user.email?.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+          user.firstName?.toLowerCase().includes(state.searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(state.searchTerm.toLowerCase());
+
+        return matchesRole && matchesSearchTerm;
       });
-    } catch (error) {
-      console.error("Error editing user:", error);
-      showToast({
-        title: "Error",
-        message: "Failed to update user.",
-        type: "error",
-      });
-    }
-  };
+    }, [state.filterRole, state.searchTerm, users]);
 
-  const handleDeleteUser = async () => {
-    try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/Users/${state.selectedUser._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
-          },
-        }
-      );
+    const handleSearchChange = (event) => {
+      setState((prevState) => ({
+        ...prevState,
+        searchTerm: event.target.value,
+      }));
+    };
 
-      updateState({
-        showDeleteConfirmation: false,
-        selectedUser: null,
-      });
+    const handleRoleFilterChange = (event) => {
+      setState((prevState) => ({
+        ...prevState,
+        filterRole: event.target.value,
+      }));
+    };
 
-      mutate();
-
-      showToast({
-        title: "Success",
-        message: "User deleted successfully.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error deleting user:", error);
-
-      showToast({
-        title: "Error",
-        message: error.response?.data?.message || "Failed to delete user",
-        type: "error",
-      });
-
-      updateState({
-        showDeleteConfirmation: false,
-        selectedUser: null,
-      });
-
-      throw error;
-    }
-  };
-
-  const openEditModal = (user) => {
-    updateState({
-      isEditModalOpen: true,
-      selectedUser: user,
-    });
-
-    setUserForm({
-      userName: user.userName,
-      email: user.email,
-      role: user.role,
-      status: user.status,
-    });
-  };
-
-  const openDeleteModal = (user) => {
-    updateState({
-      showDeleteConfirmation: true,
-      selectedUser: user,
-    });
-  };
-
-  return (
-    <Layout>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="space-y-6"
-      >
-        <div className="flex justify-between items-center">
-          <motion.h1
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            className="text-2xl font-bold"
-          >
-            Users Management
-          </motion.h1>
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button onClick={() => updateState({ isAddModalOpen: true })}>
-              <Plus className="mr-2" /> Add User
+    return (
+      <Layout>
+        <div className="container mx-auto p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold">User Management</h1>
+            <Button className="flex items-center gap-2">
+              <Plus size={20} /> Add User
             </Button>
-          </motion.div>
-        </div>
+          </div>
 
-        <div className="flex space-x-4">
-          <div className="flex-1">
+          {/* Search and Filter */}
+          <div className="flex gap-4 mb-4">
             <Input
-              startIcon={<Search />}
-              placeholder="Search users..."
+              type="text"
+              placeholder="Search by name, email..."
               value={state.searchTerm}
-              onChange={(e) => updateState({ searchTerm: e.target.value })}
+              onChange={handleSearchChange}
             />
-          </div>
-          <div className="w-64">
-            <Select
-              label="Filter Role"
-              options={roleOptions}
+            <select
               value={state.filterRole}
-              onChange={(e) => updateState({ filterRole: e.target.value })}
-            />
+              onChange={handleRoleFilterChange}
+              className="border rounded p-2"
+            >
+              <option value="">All Roles</option>
+              {roleOptions.map((role) => (
+                <option key={role.value} value={role.value}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="p-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <AnimatePresence>
-                {filteredUsers.map((user) => (
-                  <UserCard
-                    key={user._id}
-                    user={user}
-                    onEdit={() => openEditModal(user)}
-                    onDelete={() => openDeleteModal(user)}
-                  />
-                ))}
-              </AnimatePresence>
-            </tbody>
-          </table>
-          {filteredUsers.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <UserCircle className="mx-auto mb-4 text-gray-400" size={48} />
-              No users found
-            </div>
+          {/* User List */}
+          {isLoading ? (
+            <p>Loading users...</p>
+          ) : error ? (
+            <p className="text-red-500">Error: {error}</p>
+          ) : (
+            <table className="table-auto w-full border-collapse border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="border border-gray-200 px-4 py-2">Username</th>
+                  <th className="border border-gray-200 px-4 py-2">Email</th>
+                  <th className="border border-gray-200 px-4 py-2">Role</th>
+                  <th className="border border-gray-200 px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <AnimatePresence>
+                  {filteredUsers.map((user) => (
+                    <tr key={user._id}>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {user.userName}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {editUser === user._id ? (
+                          <Input
+                            value={user.email}
+                            onChange={(e) =>
+                              setEditUser((prev) => ({
+                                ...prev,
+                                email: e.target.value,
+                              }))
+                            }
+                          />
+                        ) : (
+                          user.email
+                        )}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {user.role.join(", ")}
+                      </td>
+                      <td className="border border-gray-200 px-4 py-2">
+                        {editUser === user._id ? (
+                          <Button onClick={() => handleEdit(user)}>Save</Button>
+                        ) : (
+                          <Button onClick={() => setEditUser(user._id)}>Edit</Button>
+                        )}
+                        <Button
+                          className="ml-2"
+                          variant="destructive"
+                          onClick={() => handleDelete(user._id)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </AnimatePresence>
+              </tbody>
+            </table>
           )}
         </div>
-
-        <AnimatePresence>
-          {state.isAddModalOpen && (
-            <Modal
-              title="User"
-              isOpen={state.isAddModalOpen}
-              onClose={() => {
-                resetForm();
-                updateState({ isAddModalOpen: false });
-              }}
-              onSubmit={handleAddUser}
-            >
-              <div className="space-y-4">
-                <Input
-                  label="Username"
-                  placeholder="Enter username"
-                  value={userForm.userName}
-                  onChange={(e) => handleFormChange("userName", e.target.value)}
-                  required
-                />
-                <Input
-                  label="Email"
-                  type="email"
-                  placeholder="Enter email"
-                  value={userForm.email}
-                  onChange={(e) => handleFormChange("email", e.target.value)}
-                  required
-                />
-                <Select
-                  label="Role"
-                  options={roleOptions.slice(1)}
-                  value={userForm.role}
-                  onChange={(e) => handleFormChange("role", e.target.value)}
-                  required
-                />
-                <Select
-                  label="Status"
-                  options={statusOptions}
-                  value={userForm.status}
-                  onChange={(e) => handleFormChange("status", e.target.value)}
-                  required
-                />
-              </div>
-            </Modal>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {state.isEditModalOpen && state.selectedUser && (
-            <Modal
-              title="User"
-              isEditing
-              isOpen={state.isEditModalOpen}
-              onClose={() => updateState({ isEditModalOpen: false })}
-              onSubmit={handleEditUser}
-            >
-              <div className="space-y-4">
-                <Input
-                  label="Username"
-                  placeholder="Enter Username"
-                  value={userForm.userName}
-                  onChange={(e) => handleFormChange("userName", e.target.value)}
-                  required
-                />
-                <Input
-                  label="Email"
-                  type="email"
-                  placeholder="Enter email"
-                  value={userForm.email}
-                  onChange={(e) => handleFormChange("email", e.target.value)}
-                  required
-                />
-                <Select
-                  label="Role"
-                  options={roleOptions.slice(1)}
-                  value={userForm.role}
-                  onChange={(e) => handleFormChange("role", e.target.value)}
-                  required
-                />
-                <Select
-                  label="Status"
-                  options={statusOptions}
-                  value={userForm.status}
-                  onChange={(e) => handleFormChange("status", e.target.value)}
-                  required
-                />
-              </div>
-            </Modal>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence>
-          {state.showDeleteConfirmation && state.selectedUser && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex justify-center"
-            >
-              <div className="w-full max-w-md">
-                <Alert
-                  type="warning"
-                  title="Confirm Delete User"
-                  description={`Are you sure you want to delete the user "${state.selectedUser.userName}"?`}
-                >
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        updateState({
-                          showDeleteConfirmation: false,
-                          selectedUser: null,
-                        })
-                      }
-                    >
-                      Cancel
-                    </Button>
-                    <Button variant="destructive" onClick={handleDeleteUser}>
-                      Delete
-                    </Button>
-                  </div>
-                </Alert>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      <Toast toast={toast} onClose={hideToast} />
-    </Layout>
-  );
-}
+      </Layout>
+    );
+  }

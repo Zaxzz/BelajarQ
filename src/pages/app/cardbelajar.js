@@ -16,10 +16,15 @@ export function CardWithForm() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const router = useRouter();
-  const { data: session } = useSession(); // Ambil data session
+  const { data: session, status } = useSession(); // Ambil data session dan status
   const token = session?.user.token; // Ambil token dari session
 
   React.useEffect(() => {
+    if (status === "loading") {
+      // Jika session sedang dalam status loading, tidak lakukan fetch
+      return;
+    }
+
     if (!token) {
       setError("Token not found. Please Login.");
       setIsLoading(false);
@@ -39,23 +44,27 @@ export function CardWithForm() {
         );
 
         if (!response.ok) {
-          throw new Error("Error fetching data");
+          throw new Error(`Error fetching data: ${response.statusText}`);
         }
 
         const result = await response.json();
         setData(result);
       } catch (err) {
-        setError("Error fetching data");
+        setError(`Error fetching data: ${err.message}`);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [token]); // Dependensi untuk useEffect
+  }, [token, status]); // Dependensi untuk useEffect
+
+  if (status === "loading") {
+    return <div>Loading session...</div>;
+  }
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading data...</div>;
   }
 
   if (error) {
@@ -83,9 +92,7 @@ export function CardWithForm() {
               )}
             </CardHeader>
             <CardFooter className="flex justify-between">
-              <Button onClick={() => router.push(`/app/quiz`)}>
-                Quiz
-              </Button>
+              <Button onClick={() => router.push(`/app/quiz`)}>Quiz</Button>
               <Button onClick={() => router.push(`/app/materi/${item["_id"]}`)}>
                 Belajar
               </Button>
