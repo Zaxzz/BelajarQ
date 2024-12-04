@@ -5,7 +5,7 @@ import useSWR from "swr";
 const ROLE_OPTIONS = [
   { value: "", label: "All Roles" },
   { value: ["admin"], label: "Admin" },
-  { value: ["student"], label: "Student" },
+  { value: ["authenticated"], label: "User" },
 ];
 
 const STATUS_OPTIONS = [
