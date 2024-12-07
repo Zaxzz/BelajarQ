@@ -73,7 +73,7 @@ export default function Sidebar() {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center w-full p-3 bg-red-200 text-red-600 rounded-lg transition-colors duration-200 ease-in-out font-semibold"
+          className="flex items-center w-full p-3 bg-blue-200 text-blue-600 rounded-lg transition-colors duration-200 ease-in-out font-semibold"
         >
           <LogOut className="mr-3" size={24} />
           Logout

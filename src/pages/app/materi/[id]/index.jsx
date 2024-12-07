@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useSession } from "next-auth/react";
 
 export default function Materi() {
   const router = useRouter();
@@ -7,9 +8,20 @@ export default function Materi() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const { data: session, status } = useSession(); // Ambil data session dan status
+  const token = session?.user.token; // Ambil token dari session
   // Mengambil data dari API berdasarkan ID
   useEffect(() => {
+    if (status === "loading") {
+      // Jika session sedang dalam status loading, tidak lakukan fetch
+      return;
+    }
+
+    if (!token) {
+      setError("Token not found. Please Login.");
+      setIsLoading(false);
+      return;
+    }
     if (!id) return; // Tunggu hingga id tersedia
 
     const fetchMateri = async () => {
@@ -17,7 +29,7 @@ export default function Materi() {
         const response = await fetch(`https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Belajar/${id}?$lookup=*`, {
           method: "GET",
           headers: {
-        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+        "Authorization": `Bearer ${token}`,
           },
         });
 

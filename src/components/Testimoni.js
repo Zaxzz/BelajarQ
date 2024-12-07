@@ -10,34 +10,34 @@ import ArrowNext from "../../public/assets/Icon/eva_arrow-next-fill.svg";
 const Testimoni = ({
   listTestimoni = [
     {
-      name: "iezh Robert",
+      name: "Ganang Syaifullah",
       image: "/assets/people-3.png",
-      city: "Warsaw",
-      country: "Poland",
+      city: "Semarang",
+      country: "Indonesia",
       rating: "4.5",
       testimoni:
-        "Wow... I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems. LaslesVPN always the best",
+        "The study material is very complete and easy to understand. Coupled with an interesting quiz, I can measure the extent of my understanding. Very helpful for exam preparation!",
     },
     {
-      name: "iezh Robert",
+      name: "Ahmad Chosim",
       image: "/assets/people-3.png",
-      city: "Warsaw",
-      country: "Poland",
+      city: "Semarang",
+      country: "Indonesia",
       rating: "4.5",
       testimoni:
-        "Wow... I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems. LaslesVPN always the best",
+        "This website is really the learning solution I need. The material is neat, the quizzes are challenging, and I have become more confident in facing exams!",
     },
     {
-      name: "iezh Robert",
+      name: "Ifad Yusuf",
       image: "/assets/people-3.png",
-      city: "Warsaw",
-      country: "Poland",
+      city: "Semarang",
+      country: "Indonesia",
       rating: "4.5",
       testimoni:
-        "Wow... I am very happy to use this VPN, it turned out to be more than my expectations and so far there have been no problems. LaslesVPN always the best",
+        "This website is very helpful for independent learning. The material is well structured, and the quizzes make learning more fun!",
     },
     {
-      name: "iezh Robert",
+      name: "Asdif Afada",
       image: "/assets/people-3.png",
       city: "Warsaw",
       country: "Poland",

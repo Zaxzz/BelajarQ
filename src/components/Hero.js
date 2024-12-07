@@ -41,7 +41,7 @@ const Hero = ({
               An educational platform designed to help students understand
               learning material in an interactive, engaging and accessible way.
             </p>
-            <ButtonPrimary>Get Started</ButtonPrimary>
+            <ButtonPrimary className="text-white">Get Started</ButtonPrimary>
           </div>
           <div className="flex w-full">
             <motion.div className="h-full w-full" variants={scrollAnimation}>
