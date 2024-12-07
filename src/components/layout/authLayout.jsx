@@ -111,11 +111,11 @@ export default function AuthForm({
         <div className="hidden md:flex w-1/2 bg-blue-600 p-8 items-center justify-center text-white">
           <div className="max-w-md text-center">
             <h2 className="text-2xl font-bold mb-4">
-              Dapatkan kemudahan belajar dengan BelajarQ.
+              
+Get easy learning with BelajarQ.
             </h2>
-            <p className="text-sm">
-              Ayo bergabung untuk mendapatkan pelajaran baru dan quiz dan
-              menarik.
+            <p className="text-sm text-WHITE-300">
+            Come join to get new and interesting lessons and quizzes.
             </p>
           </div>
         </div>
