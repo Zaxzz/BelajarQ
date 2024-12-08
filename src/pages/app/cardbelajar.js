@@ -92,8 +92,8 @@ export function CardWithForm() {
               )}
             </CardHeader>
             <CardFooter className="flex justify-between">
-              <Button onClick={() => router.push(`/app/quiz`)}>Quiz</Button>
-              <Button onClick={() => router.push(`/app/materi/${item["_id"]}`)}>
+              {/* <Button className="bg-blue-500" onClick={() => router.push(`/app/quiz`)}>Quiz</Button> */}
+              <Button className="bg-blue-500" onClick={() => router.push(`/app/materi/${item["_id"]}`)}>
                 Belajar
               </Button>
             </CardFooter>

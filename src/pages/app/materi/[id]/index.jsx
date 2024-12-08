@@ -66,26 +66,35 @@ export default function Materi() {
 
   // Data materi yang diambil dari data.Detailbelajar
   const materiList = data.Detailbelajar;
+  // const handleQuizRedirect = (itemId) => {
+  //   router.push(`/app/quiz/${itemId}`); // Arahkan ke halaman kuis dengan ID
+  // };
 
   return (
-    <div className="flex flex-col items-center p-8">
-      <h1 className="text-3xl font-bold mb-4">Halaman Materi</h1>
-      <p className="text-lg text-center mb-8">Selamat datang di halaman Materi! Di sini Anda dapat mengakses materi pembelajaran yang tersedia.</p>
+    <div className="flex flex-col items-center p-8 bg-blue-500">
+      <h1 className="text-3xl font-bold mb-4 text-white">Halaman Materi</h1>
+      <p className="text-lg text-center mb-8 text-white">Selamat datang di halaman Materi! Di sini Anda dapat mengakses materi pembelajaran yang tersedia.</p>
 
       {/* Menampilkan kategori dan deskripsi */}
       <div className="mt-4">
-        <h3 className="text-xl font-semibold mb-2">Kategori: {data.Kategori}</h3>
-        <p className="text-gray-700">{data.description || "Tidak ada deskripsi tersedia"}</p>
+        <h3 className="text-xl font-semibold mb-2 text-white">Kategori: {data.Kategori}</h3>
+        <p className="text-white">{data.description || "Tidak ada deskripsi tersedia"}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6 justify-center ">
         {materiList.map((item, index) => (
-          <div key={index} className="p-6 border rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <div key={index} className="p-6 border rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 bg-white">
             <h2 className="text-2xl font-semibold mb-2">{item.Mapel || `Materi ${index + 1}`}</h2>
             <p className="text-gray-700">ID: {item._id}</p>
 
             {/* Footer card dengan tombol Pelajari */}
             <div className="mt-4 flex justify-end">
+            <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+                onClick={() => router.push(`/app/quiz/${item._id}`)} // Arahkan ke halaman materi berdasarkan ID
+              >
+                Quiz
+              </button>
               <button
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors duration-300"
                 onClick={() => router.push(`/app/pelajaran`)} // Arahkan ke halaman materi berdasarkan ID
