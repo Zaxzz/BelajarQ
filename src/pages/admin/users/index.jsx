@@ -1,6 +1,7 @@
 import UsersPageView from "@/components/pages/admin/users";
 import axios from "axios";
 import useSWR from "swr";
+import { useSession } from "next-auth/react";
 
 const ROLE_OPTIONS = [
   { value: "", label: "All Roles" },
@@ -16,6 +17,8 @@ const STATUS_OPTIONS = [
 const fetcher = (url) => axios.get(url).then((res) => res.data.data);
 
 export default function UsersPage() {
+    const { data: session, status } = useSession(); // Ambil data session dan status
+  const token = session?.user.token; // Ambil token dari session
   const {
     data: users,
     error,

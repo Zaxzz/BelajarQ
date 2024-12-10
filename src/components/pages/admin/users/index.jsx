@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Search, Plus, UserCircle } from "lucide-react";
 import Layout from "@/components/layout/adminLayout";
 import { Toast, useToast } from "@/components/ui/toast";
+import { useSession } from "next-auth/react";
 
 export default function UsersPageView({ statusOptions, roleOptions }) {
   const { toast, showToast } = useToast();
-
+  const { data: session, status } = useSession(); // Ambil data session dan status
+  const token = session?.user.token; // Ambil token dari session
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,8 +30,20 @@ export default function UsersPageView({ statusOptions, roleOptions }) {
 
   // Fetch users from API
   useEffect(() => {
+    if (status === "loading") {
+      // Jika session sedang dalam status loading, tidak lakukan fetch
+      return;
+    }
+  
+    if (!token) {
+      setError("Token not found. Please Login.");
+      setIsLoading(false);
+      return;
+    }
+  
     fetchUsers();
-  }, []);
+  }, [token, status]); // Dependency array dengan token dan status session
+  
 
   const fetchUsers = async () => {
     try {
@@ -38,7 +52,7 @@ export default function UsersPageView({ statusOptions, roleOptions }) {
         "https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Users",
         {
           headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -59,7 +73,7 @@ export default function UsersPageView({ statusOptions, roleOptions }) {
         `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Users/${userId}`,
         {
           headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -83,7 +97,7 @@ export default function UsersPageView({ statusOptions, roleOptions }) {
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
