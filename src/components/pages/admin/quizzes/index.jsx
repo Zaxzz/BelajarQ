@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, FileQuestion, Plus } from "lucide-react";
 import Layout from "@/components/layout/adminLayout";
@@ -37,15 +37,53 @@ export default function QuizPageView({
 
   const [quizForm, setQuizForm] = useState({
     title: "",
-    category: categoryOptions[1].value || "",
-    duration: durationOptions[1].value || "",
-    totalQuestion: questionOptions[1].value || "",
+    category: categoryOptions[1]?.value || "", // categoryOptions yang lama
+    duration: durationOptions[1]?.value || "",
+    totalQuestion: questionOptions[1]?.value || "",
   });
+
+ const [categoryOptionsState, setCategoryOptionsState] = useState([]);
+ 
+ useEffect(() => {
+  const fetchCategoryOptions = async () => {
+    try {
+      const response = await axios.get(
+        "https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Detailbelajar?$lookup=*"
+      );
+
+      // Memformat kategori yang diambil dari API
+      const categories = response.data.map((item) => ({
+        label: item.Mapel, // Mapel adalah nama kategori
+        value: item._id,   // ID kategori
+      }));
+
+      // Tambahkan opsi default
+      const optionsWithDefault = [
+        { label: "Pilih Mapel", value: "" },
+        ...categories,
+      ];
+
+      setCategoryOptionsState(optionsWithDefault);
+
+      // Mengatur kategori default
+      setQuizForm((prevForm) => ({
+        ...prevForm,
+        category: "", // Set ke nilai kosong agar pengguna harus memilih
+      }));
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  fetchCategoryOptions();
+}, []);
+
+  
 
   const resetForm = () => {
     setQuizForm({
       title: "",
-      category: categoryOptions[1]?.value || "",
+      category: categoryOptionsState[0]?.value || "", // Menggunakan categoryOptionsState setelah data di-fetch
       duration: durationOptions[1]?.value || "",
       totalQuestion: questionOptions[1]?.value || "",
     });
@@ -59,54 +97,104 @@ export default function QuizPageView({
     e.preventDefault();
     try {
       const { title, category, duration, totalQuestion } = quizForm;
-      if (!title || !category || !duration || !totalQuestion) {
+  
+      // Validasi input
+      if (!title || !category || !duration || category === "" || !totalQuestion) {
         showToast({
           title: "Peringatan",
           message: "Please fill in all required fields.",
-          type: "error",
+          type: "warning",
         });
         return;
       }
-
-      await axios.post("/api/admin/quizzes", {
+  
+      // Format category menjadi array dengan ID saja
+      const formattedCategory = Array.isArray(category) ? category.map(cat => cat.value) : [category];
+  
+      console.log("Formatted mapel:", formattedCategory);
+  
+      const newQuizData = {
         title,
-        category,
+        category: formattedCategory, // Menggunakan array dengan ID saja
         duration,
         totalQuestion,
-      });
-      setState((prev) => ({ ...prev, isAddModalOpen: false }));
+      };
+  
+      // Mengirim data kuis baru ke API
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/quizzes`,
+        newQuizData,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      // Memperbarui state dan memberikan feedback kepada pengguna
+      setState((prev) => ({
+        ...prev,
+        isAddModalOpen: false,
+      }));
       resetForm();
       mutate();
       showToast({
         title: "Success",
-        message: "Quiz added successfully.",
+        message: "Quiz added successfully",
         type: "success",
       });
+  
+      return response.data;
     } catch (error) {
       console.error("Error adding quiz:", error);
+      const errorMessage = error.response?.data?.message || "Failed to add quiz";
+      showToast({
+        title: "Error",
+        message: errorMessage,
+        type: "error",
+      });
+  
+      setState((prev) => ({
+        ...prev,
+        isAddModalOpen: true,
+      }));
+      throw error;
     }
+  };
+  
+  const handleCategorySelect = (id) => {
+    setSelectedCategoryId(id);
   };
 
   const handleEditQuiz = async (e) => {
     e.preventDefault();
     try {
       const { title, category, duration, totalQuestion } = quizForm;
-      if (!title || !category || !duration || !totalQuestion) {
+  
+      // Validasi input
+      if (!title || !category || !duration || category === "" || !totalQuestion) {
         showToast({
           title: "Peringatan",
           message: "Please fill in all required fields.",
-          type: "error",
+          type: "warning",
         });
         return;
       }
-
+  
+      // Format category menjadi array dengan ID saja
+      const formattedCategory = Array.isArray(category) ? category.map(cat => cat.value) : [category];
+  
+      console.log("Formatted mapel:", formattedCategory);
+  
       const updateData = {
         title,
-        category,
+        category: formattedCategory, // Menggunakan array dengan ID saja
         duration,
         totalQuestion,
       };
-
+  
+      // Mengirim data yang diperbarui ke API
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/quizzes/${state.selectedQuiz._id}`,
         updateData,
@@ -117,6 +205,8 @@ export default function QuizPageView({
           },
         }
       );
+  
+      // Memperbarui state dan memberikan feedback kepada pengguna
       setState((prev) => ({
         ...prev,
         isEditModalOpen: false,
@@ -129,16 +219,17 @@ export default function QuizPageView({
         message: "Quiz updated successfully",
         type: "success",
       });
+  
       return response.data;
     } catch (error) {
       console.error("Error updating quiz:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to update quiz";
+      const errorMessage = error.response?.data?.message || "Failed to update quiz";
       showToast({
         title: "Error",
         message: errorMessage,
         type: "error",
       });
+  
       setState((prev) => ({
         ...prev,
         isEditModalOpen: true,
@@ -146,6 +237,9 @@ export default function QuizPageView({
       throw error;
     }
   };
+  
+  
+
 
   const handleDeleteQuiz = async () => {
     try {
@@ -226,10 +320,6 @@ export default function QuizPageView({
     );
   }, [quizzes, state.searchTerm, state.filterCategory]);
 
-  const updateState = (updates) => {
-    setState((prevState) => ({ ...prevState, ...updates }));
-  };
-
   if (isLoading) {
     return <QuizLoading />;
   }
@@ -255,31 +345,33 @@ export default function QuizPageView({
             Quizzes
           </motion.h1>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button onClick={() => updateState({ isAddModalOpen: true })}>
+            <Button onClick={() => setState((prev) => ({ ...prev, isAddModalOpen: true }))}>
               <Plus className="mr-2" /> Add Quiz
             </Button>
           </motion.div>
         </div>
 
+        {/* Filter and Search Components */}
         <div className="flex space-x-4">
           <div className="flex-1">
             <Input
               startIcon={<Search />}
               placeholder="Search quizzes..."
               value={state.searchTerm}
-              onChange={(e) => updateState({ searchTerm: e.target.value })}
+              onChange={(e) => setState({ searchTerm: e.target.value })}
             />
           </div>
           <div className="w-64">
             <Select
               label="Filter Category"
-              options={categoryOptions}
+              options={categoryOptionsState} // Menggunakan categoryOptionsState yang baru
               value={state.filterCategory}
-              onChange={(e) => updateState({ filterCategory: e.target.value })}
+              onChange={(e) => setState({ filterCategory: e.target.value })}
             />
           </div>
         </div>
 
+        {/* Quizzes List */}
         <motion.div
           layout
           className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6"
@@ -294,81 +386,56 @@ export default function QuizPageView({
                 onDelete={() => openDeleteConfirmation(quiz)}
               />
             ))}
-
-            {filteredQuizzes.length === 0 && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="col-span-full text-center py-8 text-gray-500"
-              >
-                <FileQuestion
-                  className="mx-auto mb-4 text-gray-400"
-                  size={48}
-                />
-                No quizzes found
-              </motion.div>
-            )}
           </AnimatePresence>
         </motion.div>
 
+        {/* Add Quiz Modal */}
         {state.isAddModalOpen && (
-          <Modal
-            title="Quiz"
-            isOpen={state.isAddModalOpen}
-            onClose={() => {
-              setState((prev) => ({ ...prev, isAddModalOpen: false }));
-              resetForm();
-            }}
-            onSubmit={handleAddQuiz}
-          >
-            <div className="space-y-4">
-              <Input
-                label="Quiz Name"
-                placeholder="Name Quiz..."
-                value={quizForm.title}
-                onChange={(e) => handleFormChange("title", e.target.value)}
-                required
-              />
-              <Select
-                label="Category"
-                options={categoryOptions.slice(1)}
-                value={quizForm.category}
-                onChange={(e) => handleFormChange("category", e.target.value)}
-                required
-              />
-              <Select
-                label="Duration"
-                options={durationOptions.slice(1)}
-                value={quizForm.duration}
-                onChange={(e) => handleFormChange("duration", e.target.value)}
-                required
-              />
-              <Select
-                label="Total Question"
-                options={questionOptions.slice(1)}
-                value={quizForm.totalQuestion}
-                onChange={(e) =>
-                  handleFormChange("totalQuestion", e.target.value)
-                }
-                required
-              />
-            </div>
-          </Modal>
-        )}
+  <Modal
+    title="Add Quiz"
+    isOpen={state.isAddModalOpen}
+    onClose={() => setState((prev) => ({ ...prev, isAddModalOpen: false }))}
+    onSubmit={handleAddQuiz}
+  >
+    <div className="space-y-4">
+      <Input
+        label="Quiz Name"
+        placeholder="Name Quiz..."
+        value={quizForm.title}
+        onChange={(e) => handleFormChange("title", e.target.value)}
+        required
+      />
+      <Select
+        label="Category"
+        options={categoryOptionsState}
+        value={quizForm.category}
+        onChange={(e) => handleFormChange("category", e.target.value)}
+        required
+      />
+      <Select
+        label="Duration"
+        options={durationOptions}
+        value={quizForm.duration}
+        onChange={(e) => handleFormChange("duration", e.target.value)}
+        required
+      />
+      <Select
+        label="Total Questions"
+        options={questionOptions}
+        value={quizForm.totalQuestion}
+        onChange={(e) => handleFormChange("totalQuestion", e.target.value)}
+        required
+      />
+    </div>
+  </Modal>
+)}
 
+        {/* Edit Quiz Modal */}
         {state.isEditModalOpen && state.selectedQuiz && (
           <Modal
-            title="Quiz"
-            isEditing
+            title="Edit Quiz"
             isOpen={state.isEditModalOpen}
-            onClose={() => {
-              setState((prev) => ({
-                ...prev,
-                isEditModalOpen: false,
-                selectedQuiz: null,
-              }));
-              resetForm();
-            }}
+            onClose={() => setState((prev) => ({ ...prev, isEditModalOpen: false }))}
             onSubmit={handleEditQuiz}
           >
             <div className="space-y-4">
@@ -381,67 +448,43 @@ export default function QuizPageView({
               />
               <Select
                 label="Category"
-                options={categoryOptions.slice(1)}
+                options={categoryOptionsState}
                 value={quizForm.category}
                 onChange={(e) => handleFormChange("category", e.target.value)}
                 required
               />
               <Select
                 label="Duration"
-                options={durationOptions.slice(1)}
+                options={durationOptions}
                 value={quizForm.duration}
                 onChange={(e) => handleFormChange("duration", e.target.value)}
                 required
               />
               <Select
-                label="Total Question"
-                options={questionOptions.slice(1)}
+                label="Total Questions"
+                options={questionOptions}
                 value={quizForm.totalQuestion}
-                onChange={(e) =>
-                  handleFormChange("totalQuestion", e.target.value)
-                }
+                onChange={(e) => handleFormChange("totalQuestion", e.target.value)}
                 required
               />
             </div>
           </Modal>
         )}
 
-        <AnimatePresence>
-          {state.showDeleteConfirmation && state.quizToDelete && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
-            >
-              <div className="w-full max-w-md">
-                <Alert
-                  type="warning"
-                  title="Konfirmasi Hapus Quiz"
-                  description={`Apakah Anda yakin ingin menghapus quiz "${state.quizToDelete.title}"?`}
-                >
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        setState((prev) => ({
-                          ...prev,
-                          showDeleteConfirmation: false,
-                          quizToDelete: null,
-                        }))
-                      }
-                    >
-                      Batal
-                    </Button>
-                    <Button variant="destructive" onClick={handleDeleteQuiz}>
-                      Hapus
-                    </Button>
-                  </div>
-                </Alert>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Delete Confirmation Modal */}
+        {state.showDeleteConfirmation && state.quizToDelete && (
+          <Modal
+            title="Confirm Deletion"
+            isOpen={state.showDeleteConfirmation}
+            onClose={() => setState((prev) => ({ ...prev, showDeleteConfirmation: false }))}
+            onSubmit={handleDeleteQuiz}
+          >
+            <Alert type="warning">
+              Are you sure you want to delete this quiz? This action cannot be undone.
+            </Alert>
+          </Modal>
+        )}
+
       </motion.div>
       <Toast toast={toast} onClose={hideToast} />
     </Layout>

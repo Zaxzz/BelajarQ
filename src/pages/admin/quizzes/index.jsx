@@ -2,14 +2,6 @@ import QuizPageView from "@/components/pages/admin/quizzes";
 import axios from "axios";
 import useSWR from "swr";
 
-const CATEGORY_OPTIONS = [
-  { value: "", label: "All Categories" },
-  { value: "SD", label: "SD" },
-  { value: "SMP", label: "SMP" },
-  { value: "SMA", label: "SMA" },
-  { value: "Kuliah", label: "Kuliah" },
-];
-
 const QUESTION_OPTIONS = [
   { value: "10", label: "10" },
   { value: "15", label: "15" },
@@ -41,6 +33,25 @@ export default function QuizPage() {
     isLoading,
     mutate,
   } = useSWR("/api/admin/quizzes", fetcher);
+
+  // Ambil data Mapel dari API
+  const { data: mapelData, error: mapelError, isLoading: mapelLoading } = useSWR(
+    "https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/Detailbelajar?$lookup=*",
+    fetcher
+  );
+
+  // Jika data Mapel masih loading atau error
+  if (mapelLoading) return <div>Loading categories...</div>;
+  if (mapelError) return <div>Error loading categories</div>;
+
+  // Cek apakah mapelData ada dan bukan undefined
+  const CATEGORY_OPTIONS = [
+    { value: "", label: "All Categories" },
+    ...(mapelData && Array.isArray(mapelData) ? mapelData.map((item) => ({
+      value: item.mapel,
+      label: item.Mapel,
+    })) : [])
+  ];
 
   return (
     <QuizPageView
