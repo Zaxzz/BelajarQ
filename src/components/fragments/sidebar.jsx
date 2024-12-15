@@ -34,11 +34,11 @@ export default function Sidebar() {
       icon: Library,
       href: "/admin/subjects",
     },
-    {
-      label: "Quizzes",
-      icon: Brain,
-      href: "/admin/quizzes",
-    },
+    // {
+    //   label: "Quizzes",
+    //   icon: Brain,
+    //   href: "/admin/quizzes",
+    // },
   ];
 
   return (
