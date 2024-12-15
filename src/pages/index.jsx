@@ -7,7 +7,7 @@ import Hero from "@/components/Hero";
 export default function Home() {
   return (
     <>
-      <SeoHead title="LaslesVPN Landing Page" />
+      <SeoHead title="BelajarQ" />
       <Layout>
         <Hero />
         <Feature />
