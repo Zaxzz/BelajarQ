@@ -41,8 +41,8 @@ export const authProviders = [
   }),
 
   GoogleProvider({
-    clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+    clientId: "157911626263-mqdui6oup65l6qqr8d3ds6gvit6ofavh.apps.googleusercontent.com",
+    clientSecret: "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",
     authorization: {
       params: {
         prompt: "consent select_account",

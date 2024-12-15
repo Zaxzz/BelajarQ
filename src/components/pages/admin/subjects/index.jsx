@@ -138,7 +138,7 @@ export default function SubjectsPageView({
       }
 
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/subjects/${state.selectedSubject._id}`,
+        `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/subjects/${state.selectedSubject._id}`,
         { title, category, subject, lesson, description },
         {
           headers: {
@@ -170,7 +170,7 @@ export default function SubjectsPageView({
   const handleDeleteSubject = async () => {
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/subjects/${state.selectedSubject._id}`,
+        `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/subjects/${state.selectedSubject._id}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,

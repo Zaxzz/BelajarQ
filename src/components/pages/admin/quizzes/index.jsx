@@ -122,7 +122,7 @@ export default function QuizPageView({
   
       // Mengirim data kuis baru ke API
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/quizzes`,
+        `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/quizzes`,
         newQuizData,
         {
           headers: {
@@ -196,7 +196,7 @@ export default function QuizPageView({
   
       // Mengirim data yang diperbarui ke API
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/quizzes/${state.selectedQuiz._id}`,
+        `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/quizzes/${state.selectedQuiz._id}`,
         updateData,
         {
           headers: {
@@ -245,7 +245,7 @@ export default function QuizPageView({
     try {
       const quiz = state.quizToDelete;
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/quizzes/${quiz._id}`,
+        `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/quizzes/${quiz._id}`,
         {
           headers: {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_BEARER_TOKEN}`,

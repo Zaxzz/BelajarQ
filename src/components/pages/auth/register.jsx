@@ -35,7 +35,7 @@ export default function RegisterView() {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_KONTENBASE_API_URL}/auth/register`,
+        `https://api.kontenbase.com/query/api/v1/79297f44-a03f-401b-a2c6-6b7ce1c7866f/auth/register`,
         formData,
         {
           headers: {
